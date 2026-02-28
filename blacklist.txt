@@ -17,6 +17,12 @@ youtubei.googleapis.com
 jnn-pa.googleapis.com
 yt-video-upload.l.google.com
 wide-youtube.l.google.com
+rt.pornhub.org
+pornhub.org
+pornhub.com
+ei.phncdn.com
+ew.phncdn.com
+etahub.com
 yt3.googleusercontent.com
 youtubekids.com
 returnyoutubedislikeapi.com
