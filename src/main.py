@@ -14,7 +14,9 @@ import json
 import logging
 import os
 import random
+import socket
 import ssl
+import struct
 import subprocess
 import sys
 import textwrap
@@ -23,7 +25,9 @@ import time
 import traceback
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime
+from ipaddress import ip_address
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from urllib.error import URLError
@@ -382,6 +386,49 @@ class ProxyConfig:
         self.auto_blacklist = False
         self.quiet = False
         self.start_in_tray = False
+        self.dns_retry_attempts = 3
+        self.dns_retry_delay = 0.2
+        self.dns_resolvers = ["8.8.8.8", "1.1.1.1"]
+        self.dns_tcp_timeout = 2.0
+        self.dns_system_timeout = 2.0
+        self.dns_prefer_ipv4 = True
+
+
+@dataclass
+class ResolvedTarget:
+    """Resolved connection target"""
+
+    ip: str
+    port: int
+    family: int
+    resolver_path: str
+    attempts: int
+    resolver_used: str
+
+
+class DnsResolveError(Exception):
+    """Structured DNS resolution error"""
+
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        reason_code: str,
+        attempts: int,
+        resolver_path: str,
+        last_exception: Optional[BaseException] = None,
+        resolver_used: Optional[str] = None,
+    ):
+        self.host = host
+        self.port = port
+        self.reason_code = reason_code
+        self.attempts = attempts
+        self.resolver_path = resolver_path
+        self.last_exception = last_exception
+        self.resolver_used = resolver_used or "-"
+        super().__init__(
+            f"DNS resolve failed for {host}:{port} ({reason_code}, {resolver_path})"
+        )
 
 
 class IBlacklistManager(ABC):
@@ -855,6 +902,7 @@ class ConnectionHandler(IConnectionHandler):
     ) -> None:
         """Handle incoming client connection"""
 
+        conn_key = None
         try:
             client_ip, client_port = writer.get_extra_info("peername")
             http_data = await reader.read(1500)
@@ -891,6 +939,8 @@ class ConnectionHandler(IConnectionHandler):
                     reader, writer, http_data, host, port, conn_key
                 )
 
+        except DnsResolveError as exc:
+            await self._handle_dns_resolve_error(writer, conn_key, exc)
         except Exception:
             await self._handle_connection_error(writer, conn_key)
 
@@ -969,6 +1019,302 @@ class ConnectionHandler(IConnectionHandler):
         writer.close()
         await writer.wait_closed()
 
+    def _is_ip_address(self, host: str) -> bool:
+        """Check whether host is already an IP address"""
+
+        try:
+            ip_address(host)
+            return True
+        except ValueError:
+            return False
+
+    def _build_dns_query(self, host: str) -> bytes:
+        """Build a minimal DNS A-record query"""
+
+        transaction_id = random.randint(0, 0xFFFF)
+        header = struct.pack("!HHHHHH", transaction_id, 0x0100, 1, 0, 0, 0)
+
+        labels = []
+        for label in host.rstrip(".").split("."):
+            label_bytes = label.encode("idna")
+            labels.append(bytes([len(label_bytes)]))
+            labels.append(label_bytes)
+
+        question = b"".join(labels) + b"\x00" + struct.pack("!HH", 1, 1)
+        return header + question
+
+    def _read_dns_name(self, message: bytes, offset: int) -> Tuple[str, int]:
+        """Read DNS name with compression support"""
+
+        labels = []
+        jumped = False
+        next_offset = offset
+
+        while True:
+            length = message[offset]
+            if length == 0:
+                offset += 1
+                if not jumped:
+                    next_offset = offset
+                break
+
+            if length & 0xC0 == 0xC0:
+                pointer = ((length & 0x3F) << 8) | message[offset + 1]
+                if not jumped:
+                    next_offset = offset + 2
+                offset = pointer
+                jumped = True
+                continue
+
+            offset += 1
+            labels.append(message[offset: offset + length].decode("idna"))
+            offset += length
+            if not jumped:
+                next_offset = offset
+
+        return ".".join(labels), next_offset
+
+    def _parse_dns_response(self, payload: bytes) -> Tuple[str, List[str]]:
+        """Parse minimal DNS response for A-records"""
+
+        if len(payload) < 12:
+            raise ValueError("DNS response too short")
+
+        _, flags, qdcount, ancount, _, _ = struct.unpack("!HHHHHH", payload[:12])
+        rcode = flags & 0x000F
+        offset = 12
+
+        for _ in range(qdcount):
+            _, offset = self._read_dns_name(payload, offset)
+            offset += 4
+
+        answers = []
+        for _ in range(ancount):
+            _, offset = self._read_dns_name(payload, offset)
+            rtype, rclass, _, rdlength = struct.unpack(
+                "!HHIH", payload[offset: offset + 10]
+            )
+            offset += 10
+            rdata = payload[offset: offset + rdlength]
+            offset += rdlength
+
+            if rtype == 1 and rclass == 1 and rdlength == 4:
+                answers.append(socket.inet_ntoa(rdata))
+
+        if rcode == 3:
+            return "nxdomain", answers
+        if rcode != 0:
+            return "temporary_failure", answers
+        if answers:
+            return "ok", answers
+        return "temporary_failure", answers
+
+    async def _resolve_via_system(self, host: str, port: int) -> ResolvedTarget:
+        """Resolve host through the system resolver"""
+
+        loop = asyncio.get_running_loop()
+        family = socket.AF_INET if self.config.dns_prefer_ipv4 else socket.AF_UNSPEC
+
+        try:
+            addr_info = await asyncio.wait_for(
+                loop.getaddrinfo(
+                    host,
+                    port,
+                    family=family,
+                    type=socket.SOCK_STREAM,
+                    proto=socket.IPPROTO_TCP,
+                ),
+                timeout=self.config.dns_system_timeout,
+            )
+        except asyncio.TimeoutError as exc:
+            raise DnsResolveError(
+                host,
+                port,
+                "timeout",
+                1,
+                "system",
+                exc,
+                resolver_used="system",
+            ) from exc
+        except socket.gaierror as exc:
+            reason_code = (
+                "temporary_failure"
+                if exc.errno == socket.EAI_AGAIN
+                else "system_resolver_error"
+            )
+            raise DnsResolveError(
+                host,
+                port,
+                reason_code,
+                1,
+                "system",
+                exc,
+                resolver_used="system",
+            ) from exc
+
+        if not addr_info:
+            raise DnsResolveError(
+                host,
+                port,
+                "system_resolver_error",
+                1,
+                "system",
+                RuntimeError("System resolver returned no addresses"),
+                resolver_used="system",
+            )
+
+        selected = addr_info[0]
+        sockaddr = selected[4]
+        return ResolvedTarget(
+            ip=sockaddr[0],
+            port=sockaddr[1],
+            family=selected[0],
+            resolver_path="system",
+            attempts=1,
+            resolver_used="system",
+        )
+
+    async def _resolve_via_tcp_dns(self, host: str, port: int) -> ResolvedTarget:
+        """Resolve host through fallback DNS-over-TCP resolvers"""
+
+        saw_timeout = False
+        saw_nxdomain = False
+        last_exception: Optional[BaseException] = None
+        resolvers = self.config.dns_resolvers or ["8.8.8.8", "1.1.1.1"]
+        query = self._build_dns_query(host)
+        packet = struct.pack("!H", len(query)) + query
+
+        for resolver in resolvers:
+            reader = None
+            writer = None
+            try:
+                reader, writer = await asyncio.wait_for(
+                    asyncio.open_connection(resolver, 53),
+                    timeout=self.config.dns_tcp_timeout,
+                )
+                writer.write(packet)
+                await asyncio.wait_for(writer.drain(), timeout=self.config.dns_tcp_timeout)
+
+                raw_length = await asyncio.wait_for(
+                    reader.readexactly(2), timeout=self.config.dns_tcp_timeout
+                )
+                response_length = struct.unpack("!H", raw_length)[0]
+                payload = await asyncio.wait_for(
+                    reader.readexactly(response_length),
+                    timeout=self.config.dns_tcp_timeout,
+                )
+
+                status, answers = self._parse_dns_response(payload)
+                if status == "ok" and answers:
+                    return ResolvedTarget(
+                        ip=answers[0],
+                        port=port,
+                        family=socket.AF_INET,
+                        resolver_path=f"fallback-tcp:{resolver}",
+                        attempts=1,
+                        resolver_used=resolver,
+                    )
+                if status == "nxdomain":
+                    saw_nxdomain = True
+                    last_exception = RuntimeError(
+                        f"NXDOMAIN confirmed by TCP resolver {resolver}"
+                    )
+                    continue
+
+                last_exception = RuntimeError(
+                    f"Fallback resolver {resolver} returned {status}"
+                )
+            except asyncio.TimeoutError as exc:
+                saw_timeout = True
+                last_exception = exc
+            except (
+                asyncio.IncompleteReadError,
+                ConnectionError,
+                OSError,
+                ValueError,
+            ) as exc:
+                last_exception = exc
+            finally:
+                if writer is not None:
+                    writer.close()
+                    try:
+                        await writer.wait_closed()
+                    except Exception:
+                        pass
+
+        if saw_nxdomain and not saw_timeout:
+            raise DnsResolveError(
+                host,
+                port,
+                "nxdomain",
+                len(resolvers),
+                "fallback-tcp",
+                last_exception,
+                resolver_used=",".join(resolvers),
+            )
+
+        reason_code = "timeout" if saw_timeout and last_exception else "fallback_resolver_error"
+        raise DnsResolveError(
+            host,
+            port,
+            reason_code,
+            len(resolvers),
+            "fallback-tcp",
+            last_exception,
+            resolver_used=",".join(resolvers),
+        )
+
+    async def _resolve_target(self, host: str, port: int) -> ResolvedTarget:
+        """Resolve connection target with retries and DNS-over-TCP fallback"""
+
+        if self._is_ip_address(host):
+            family = socket.AF_INET6 if ":" in host else socket.AF_INET
+            return ResolvedTarget(
+                ip=host,
+                port=port,
+                family=family,
+                resolver_path="direct-ip",
+                attempts=0,
+                resolver_used="direct-ip",
+            )
+
+        last_error: Optional[DnsResolveError] = None
+        attempts = max(1, self.config.dns_retry_attempts)
+        for attempt in range(1, attempts + 1):
+            try:
+                resolved = await self._resolve_via_system(host, port)
+                resolved.attempts = attempt
+                resolved.resolver_path = "system"
+                return resolved
+            except DnsResolveError as exc:
+                exc.attempts = attempt
+                last_error = exc
+                if attempt < attempts:
+                    await asyncio.sleep(self.config.dns_retry_delay)
+
+        try:
+            resolved = await self._resolve_via_tcp_dns(host, port)
+            resolved.attempts = attempts
+            return resolved
+        except DnsResolveError as fallback_error:
+            fallback_error.attempts = attempts
+            if last_error and fallback_error.reason_code == "fallback_resolver_error":
+                fallback_error.reason_code = last_error.reason_code
+                fallback_error.last_exception = fallback_error.last_exception or last_error.last_exception
+            raise fallback_error
+
+    async def _open_resolved_connection(
+        self, resolved: ResolvedTarget
+    ) -> Tuple[asyncio.StreamReader, asyncio.StreamWriter]:
+        """Open outbound connection using a pre-resolved IP address"""
+
+        return await asyncio.open_connection(
+            resolved.ip,
+            resolved.port,
+            family=resolved.family,
+            local_addr=(self.out_host, 0) if self.out_host else None,
+        )
+
     async def _handle_https_connection(
         self,
         reader: asyncio.StreamReader,
@@ -980,16 +1326,12 @@ class ConnectionHandler(IConnectionHandler):
     ) -> None:
         """Handle HTTPS CONNECT request"""
 
+        resolved = await self._resolve_target(host.decode(), port)
+        remote_reader, remote_writer = await self._open_resolved_connection(resolved)
+
         response_size = len(b"HTTP/1.1 200 Connection Established\r\n\r\n")
         self.statistics.update_traffic(response_size, 0)
         conn_info.traffic_in += response_size
-
-        remote_reader, remote_writer = await asyncio.open_connection(
-            host.decode(),
-            port,
-            local_addr=(self.out_host, 0) if self.out_host else None,
-        )
-
         writer.write(b"HTTP/1.1 200 Connection Established\r\n\r\n")
         await writer.drain()
 
@@ -1008,11 +1350,8 @@ class ConnectionHandler(IConnectionHandler):
     ) -> None:
         """Handle HTTP request"""
 
-        remote_reader, remote_writer = await asyncio.open_connection(
-            host.decode(),
-            port,
-            local_addr=(self.out_host, 0) if self.out_host else None,
-        )
+        resolved = await self._resolve_target(host.decode(), port)
+        remote_reader, remote_writer = await self._open_resolved_connection(resolved)
 
         remote_writer.write(http_data)
         await remote_writer.drain()
@@ -1214,11 +1553,12 @@ class ConnectionHandler(IConnectionHandler):
         """Handle connection errors"""
 
         try:
-            error_response = b"HTTP/1.1 500 Internal Server Error\r\n\r\n"
-            writer.write(error_response)
-            await writer.drain()
-
-            self.statistics.update_traffic(len(error_response), 0)
+            await self._send_error_response(
+                writer,
+                500,
+                "Internal Server Error",
+                "Proxy internal error",
+            )
         except Exception:
             pass
 
@@ -1227,13 +1567,83 @@ class ConnectionHandler(IConnectionHandler):
 
         self.statistics.increment_total_connections()
         self.statistics.increment_error_connections()
+        domain = conn_info.dst_domain if conn_info else "unknown"
         self.logger.log_error(
-            f"{conn_info.dst_domain} : {traceback.format_exc()}")
+            f"{domain} : {traceback.format_exc()}")
 
         try:
             writer.close()
             await writer.wait_closed()
         except:
+            pass
+
+    async def _send_error_response(
+        self,
+        writer: asyncio.StreamWriter,
+        status_code: int,
+        status_text: str,
+        message: str,
+    ) -> None:
+        """Send a descriptive proxy error response"""
+
+        body = message.encode("utf-8", errors="replace")
+        response = (
+            f"HTTP/1.1 {status_code} {status_text}\r\n"
+            "Content-Type: text/plain; charset=utf-8\r\n"
+            f"Content-Length: {len(body)}\r\n"
+            "Connection: close\r\n\r\n"
+        ).encode("ascii") + body
+        writer.write(response)
+        await writer.drain()
+        self.statistics.update_traffic(len(response), 0)
+
+    async def _handle_dns_resolve_error(
+        self, writer: asyncio.StreamWriter, conn_key: Tuple, error: DnsResolveError
+    ) -> None:
+        """Handle DNS resolution failures without masking details"""
+
+        status_map = {
+            "nxdomain": (502, "Bad Gateway"),
+            "temporary_failure": (502, "Bad Gateway"),
+            "system_resolver_error": (502, "Bad Gateway"),
+            "fallback_resolver_error": (502, "Bad Gateway"),
+            "timeout": (504, "Gateway Timeout"),
+        }
+        status_code, status_text = status_map.get(
+            error.reason_code, (502, "Bad Gateway")
+        )
+        message = (
+            f"DNS resolve failed for host {error.host}:{error.port} "
+            f"({error.reason_code}, {error.resolver_path})"
+        )
+
+        try:
+            await self._send_error_response(writer, status_code, status_text, message)
+        except Exception:
+            pass
+
+        async with self.connections_lock:
+            conn_info = self.active_connections.pop(conn_key, None)
+
+        self.statistics.increment_total_connections()
+        self.statistics.increment_error_connections()
+
+        last_exception = error.last_exception
+        last_exception_type = type(last_exception).__name__ if last_exception else "-"
+        last_exception_text = str(last_exception) if last_exception else "-"
+        dst_domain = conn_info.dst_domain if conn_info else error.host
+        self.logger.log_error(
+            "dns_error "
+            f"host={error.host} port={error.port} reason={error.reason_code} "
+            f"attempts={error.attempts} resolver_path={error.resolver_path} "
+            f"resolver_used={error.resolver_used} exception_type={last_exception_type} "
+            f"exception={last_exception_text} dst_domain={dst_domain}"
+        )
+
+        try:
+            writer.close()
+            await writer.wait_closed()
+        except Exception:
             pass
 
     async def cleanup_tasks(self) -> None:
@@ -1531,6 +1941,11 @@ class ConfigLoader:
         config.auto_blacklist = args.autoblacklist
         config.quiet = args.quiet
         config.start_in_tray = args.start_in_tray
+        config.dns_retry_attempts = args.dns_retries
+        config.dns_retry_delay = args.dns_retry_delay
+        config.dns_resolvers = args.dns_resolver or ["8.8.8.8", "1.1.1.1"]
+        config.dns_tcp_timeout = args.dns_timeout
+        config.dns_system_timeout = args.dns_timeout
         return config
 
 
@@ -1715,6 +2130,30 @@ class ProxyApplication:
         )
         parser.add_argument(
             "--log-error", required=False, help="Path to log file for errors"
+        )
+        parser.add_argument(
+            "--dns-retries",
+            type=int,
+            default=3,
+            help="Number of system DNS resolve retries before fallback",
+        )
+        parser.add_argument(
+            "--dns-retry-delay",
+            type=float,
+            default=0.2,
+            help="Delay between DNS retries in seconds",
+        )
+        parser.add_argument(
+            "--dns-resolver",
+            action="append",
+            default=None,
+            help="Fallback DNS-over-TCP resolver IP address (can be used multiple times)",
+        )
+        parser.add_argument(
+            "--dns-timeout",
+            type=float,
+            default=2.0,
+            help="Timeout in seconds for DNS operations",
         )
         parser.add_argument(
             "-q", "--quiet", action="store_true", help="Remove UI output"
