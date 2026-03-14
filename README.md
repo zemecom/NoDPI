@@ -7,169 +7,178 @@
 # NoDPI
 <b><i>Say NO to blocking!</b></i>
 
-[![Visitors](https://visitor-badge.laobi.icu/badge?page_id=GVCoder09.NoDPI)](https://github.com/GVCoder09/NoDPI)
+[![Visitors](https://visitor-badge.laobi.icu/badge?page_id=GVCoder09.NoDPI)]()
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL3.0-yellow.svg)](https://www.gnu.org/licenses/gpl-3.0.txt)
 [![GitHub Release](https://img.shields.io/github/v/release/GVCoder09/nodpi)](https://github.com/GVCoder09/NoDPI)
-[![Github All Releases](https://img.shields.io/github/downloads/GVCoder09/nodpi/total.svg)](https://github.com/GVCoder09/NoDPI)
-[![Github Latest Release](https://img.shields.io/github/downloads/GVCoder09/nodpi/latest/total.svg)](https://github.com/GVCoder09/NoDPI)
-[![GitHub Stars](https://img.shields.io/github/stars/GVCoder09/nodpi.svg?style=dark)](https://github.com/GVCoder09/NoDPI)
-[![GitHub Forks](https://img.shields.io/github/forks/GVCoder09/nodpi.svg?style=dark)](https://github.com/GVCoder09/NoDPI)
-[![GitHub Last commit](https://img.shields.io/github/last-commit/GVCoder09/nodpi.svg?style=dark)](https://github.com/GVCoder09/NoDPI)
-[![GitHub Pages](https://img.shields.io/badge/Website-Live-green?style=flat&logo=github)](https://gvcoder09.github.io/nodpi_site/)
+[![Github All Releases](https://img.shields.io/github/downloads/GVCoder09/nodpi/total.svg)](https://github.com/remittor/zapret-openwrt/releases)
+[![Github Latest Release](https://img.shields.io/github/downloads/GVCoder09/nodpi/latest/total.svg)](https://github.com/remittor/zapret-openwrt/releases)
+[![GitHub Stars](https://img.shields.io/github/stars/GVCoder09/nodpi.svg?style=social)](https://github.com/GVCoder09/NoDPI)
+[![GitHub Forks](https://img.shields.io/github/forks/GVCoder09/nodpi.svg?style=social)](https://github.com/GVCoder09/NoDPI)
+[![GitHub Last commit](https://img.shields.io/github/last-commit/GVCoder09/nodpi.svg?style=social)](https://github.com/GVCoder09/NoDPI)
 
 > [!IMPORTANT]
-> This project is a fork of the repository https://github.com/theo0x0/nodpi and is developed independently. Do not confuse with https://github.com/raspabamos/nodpi !
+> Этот проект является ответвлением репозитория https://github.com/theo0x0/nodpi и разрабатывается независимо от него. Не путайте с https://github.com/raspabamos/nodpi !
 
 > [!NOTE]
-> This version is for desktop systems. **The Android version is available here:** https://github.com/GVCoder09/NoDPI4Android
-
-🌐 **[Website & Documentation](https://gvcoder09.github.io/nodpi_site/)** - user-friendly guide and overview
+> Эта версия предназначена для настольных систем. **Версия для Android доступна здесь:** https://github.com/GVCoder09/NoDPI4Android
 
 **Read this in other languages / Читайте на других языках**
-- **[English](README.md)**
-- [Русский](README.ru.md)
+- [English](README.en.md)
+- **[Русский](README.md)**
 
-## Table of Content
-
+## Содержание
 - [NoDPI](#nodpi)
-  - [Table of Content](#table-of-content)
-  - [Description](#description)
-    - [How does this work](#how-does-this-work)
-    - [Key advantages and features](#key-advantages-and-features)
-    - [Sites currently unavailable via NoDPI](#sites-currently-unavailable-via-nodpi)
-    - [Alternatives](#alternatives)
-  - [Terms of Use and Disclaimer](#terms-of-use-and-disclaimer)
-  - [Quick start](#quick-start)
-    - [Additional Blacklists](#additional-blacklists)
-    - [Add to startup in Windows and Linux](#add-to-startup-in-windows-and-linux)
-    - [Supported arguments](#supported-arguments)
-    - [Running on Windows 7](#running-on-windows-7)
-  - [Run from source code](#run-from-source-code)
-  - [Building the executable](#building-the-executable)
-  - [Run in Docker](#run-in-docker)
+  - [Содержание](#содержание)
+  - [Описание](#описание)
+    - [Как это работает](#как-это-работает)
+    - [Основные возможности и преимущества](#основные-возможности-и-преимущества)
+    - [Сайты, которые в настоящее время не поддаются разблокировке через NoDPI](#сайты-которые-в-настоящее-время-не-поддаются-разблокировке-через-nodpi)
+    - [Альтернативы](#альтернативы)
+  - [Условия использования и отказ от ответственности](#условия-использования-и-отказ-от-ответственности)
+  - [Быстрый старт](#быстрый-старт)
+    - [Дополнительные списки](#дополнительные-списки)
+    - [Добавление в автозагрузку в Windows и Linux](#добавление-в-автозагрузку-в-windows-и-linux)
+    - [Поддерживаемые аргументы командной строки](#поддерживаемые-аргументы-командной-строки)
+    - [Работа на Windows 7](#работа-на-windows-7)
+  - [Запуск из исходного кода](#запуск-из-исходного-кода)
+  - [Сборка исполняемого файла](#сборка-исполняемого-файла)
+  - [Запуск в Docker](#запуск-в-docker)
   - [FAQ](#faq)
-  - [Star History](#star-history)
+  - [История звезд проекта](#история-звезд-проекта)
 
-## Description
+## Описание
 
- NoDPI is a utility designed to bypass DPI (Deep Packet Inspection). What is DPI? DPI is a technology for inspecting network packets based on their content to regulate and filter traffic. It is often used by internet service providers to censor and block access to certain web resources and protocols. The goal of this program is to "trick" DPI by modifying network packets, although in reality, this trickery is often simply a consequence of a lack of computing resources and time. 
- 
- This utility was developed primarily for Russian users as a simpler (but less powerful) replacement for similar tools. In most cases, it gets the job done; in particular, it allows you to use YouTube without any problems.
+NoDPI — это утилита, предназначенная для обхода DPI (Deep Packet Inspection). Что такое DPI? DPI — это технология анализа сетевых пакетов на основе их содержимого для регулирования и фильтрации трафика. Она часто используется интернет-провайдерами для цензуры и блокировки доступа к определённым веб-ресурсам и протоколам. Цель этой программы — «обмануть» DPI, модифицируя сетевые пакеты, хотя на самом деле этот "обман" часто является следствием нехватки вычислительных ресурсов и времени на стороне провайдера.
 
- But unfortunately, the absolute performance of this utility cannot be guaranteed. Some sites, such as YouTube, are good to unlock, while others, as Instagram.com or Facebook.com, require completely different methods for bypassing locks, which are not yet implemented in this utility from their low-leveling and difficulty. Sometimes, the performance of certain sites can also depend on the provider - how it blocks the site and what technical means applies.
+Эта утилита была разработана в первую очередь для российских пользователей как более простая (но менее мощная) замена аналогичным инструментам. В большинстве случаев она справляется со своей задачей; в частности, она позволяет без проблем пользоваться YouTube.
+
+Но, к сожалению, абсолютная работоспособность этой утилиты не может гарантироваться. Некоторые сайты, например, YouTube, легко поддаются разблокировке, в то время как другие, например, Instagram.com или Facebook.com, требуют совершенно иных методов обхода блокировок, которые пока не реализованы в этой утилите из-за их низкоуровненности и сложности. Иногда работоспособность определенных сайтов может зависеть и от провайдера — того, как именно он блокирует сайт и какие технические средства применяет.
 
 [!["Screenshot"](./assets/screenshot.png)]()
 
-### How does this work
+### Как это работает
 
-NoDPI launches a proxy server on your computer through which you direct http(s) traffic. The program intercepts ClientHello of outing connections and fragments them according to one of the following methods:
+NoDPI запускает на вашем компьютере прокси-сервер, через который вы перенаправляете http(s)-трафик. Программа перехватывает исходящие ClientHello соединений и фрагментирует их одним из следующих способов:
 
-*Random fragmentation (by default)*
+*Случайная фрагментация (по умолчанию)*
 
-Clienthello is divided into several parts of random length. Each part is glued with the prefixes of the type of Clienthello and then all this is sent in one package.
+ClientHello разбивается на несколько частей случайной длины. Каждая часть склеивается префиксами типа ClientHello, и всё это отправляется одним пакетом.
 
-*Fragmentation by SNI*
+*Фрагментация по SNI*
 
-In the package there is a field containing SNI record. ClientHello is divided into 4 parts: to SNI, the first and second half of SNI, and all that is after it. The title indicating the type Clienthello is attached to each part and then all this is sent in one bag.
+В пакете есть поле, содержащее запись SNI. ClientHello разбивается на 4 части: сам SNI, первая и вторая половина SNI, и всё, что после него. К каждой части прикрепляется заголовок, указывающий на тип ClientHello, и всё это отправляется одним пакетом.
 
-Also regardless of the method, the TLS version is replaced by version 1.3, which is the most modern (but this does not mean that your data begins to be transmitted according to the specifications of this version). All this together allows you to get around the lock. Apparently DPI does not yet have the necessary capacities to unravel this "ball" and simply ignore such traffic, saving time and effort. But it is possible that soon these methods will not be workers.
+Также, независимо от способа, версия TLS заменяется на версию 1.3, которая является самой современной на данный момент (хотя это не означает, что ваши данные начинают передаваться в соответствии со спецификациями этой версии). Всё это в совокупности позволяет обойти блокировку. По всей видимости, DPI пока не обладает необходимыми мощностями, чтобы распутать этот «клубок», и просто игнорирует такой трафик, экономя время и силы. Но, возможно, скоро эти методы перестанут работать.
 
 > [!IMPORTANT]
-> NoDPI only works with HTTPS traffic. He can also take HTTP traffic, but purely for compatibility - sites working through this outdated protocol are practically not subject to unlock and the program simply sends traffic to the addressee.
+> NoDPI работает только с HTTPS-трафиком. Он также может принимать HTTP-трафик, но исключительно для совместимости — HTTP-сайты практически не подлежат разблокировке, и программа просто отправляет трафик адресату.
 
-NoDPI does not collect and does not send any data about you, does not use any third -party programs and libraries, does not interfere in the system processes and does not require administrator rights to work.
+NoDPI не собирает и не отправляет никаких данных о вас, не использует сторонние программы и библиотеки, не вмешивается в системные процессы и не требует прав администратора для работы.
 
-The entire NoDPI code is written exclusively on the Python and uses only its standard library.
+Весь код NoDPI написан исключительно на Python и использует только его стандартную библиотеку.
 
-### Key advantages and features
+### Основные возможности и преимущества
 
-- Open source
-- Easy to use, launch, and configure. The program has an intuitive interface. Using the utility requires no special knowledge; it can be launched by any user without administrator rights.
-- The program works with a list of blocked domains and can automatically detect blocked websites.
-- Cross-platform support ensures stable operation on Windows/Linux/MacOS. An Android version is also [available](https://github.com/gvcoder09/nodpi4android).
-- The program can be integrated into a corporate network and used by staff, rather than just an individual.
-- Supports error and access logging. You can see who visited specific websites and when.
-- Ability to add yourself to autostart on Windows/Linux
+- Открытый исходный код
+- Простота использования, запуска и настройки. Программа имеет интуитивно понятный интерфейс. Использование утилиты не требует специальных знаний; её может запустить любой пользователь без прав администратора.
+- Программа работает со списком заблокированных доменов и может автоматически определять заблокированные веб-сайты.
+- Кроссплатформенность обеспечивает стабильную работу на Windows/Linux/MacOS. [Также доступна версия для Android](https://github.com/gvcoder09/nodpi4android).
+- Программа может быть интегрирована в корпоративную сеть и использоваться сотрудниками, а не только отдельными пользователями.
+- Поддерживает журналирование ошибок и доступа. Вы можете видеть, кто и когда посещал конкретные веб-сайты.
+- Имеет возможность добавлять себя в автозагрузку на Windows/Linux
 
-### Sites currently unavailable via NoDPI
+### Сайты, которые в настоящее время не поддаются разблокировке через NoDPI
 
-As of February 2026, the following services and websites cannot be unblocked using NoDPI:
+По состоянию на февраль 2026 года следующие сервисы и веб-сайты нельзя разблокировать с помощью NoDPI:
 - Instagram
 - Facebook
 - X (Twitter)
 - Telegram
-- WhatsApp 
-- Voice and video in Discord
+- WhatsApp
+- Голосовая и видеосвязь в Discord
 
-Please use [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) by @ValdikSS or another tools. All sites blocked by IP address are also unavailable.
+Для них вы можете использовать [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) от @ValdikSS или другие инструменты. Также недоступны все сайты, заблокированные по IP.
 
-### Alternatives
+### Альтернативы
 
-- **[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI)** by @ValdikSS (for Windows)
-- **[zapret](https://github.com/bol-van/zapret)** by @bol-van (for MacOS, Linux and Windows)
-- **[Green Tunnel](https://github.com/SadeghHayeri/GreenTunnel)** by @SadeghHayeri (for MacOS, Linux and Windows)
-- **[DPI Tunnel CLI](https://github.com/nomoresat/DPITunnel-cli)** by @zhenyolka (for Linux and routers)
-- **[DPI Tunnel for Android](https://github.com/nomoresat/DPITunnel-android)** by @zhenyolka (for Android)
-- **[PowerTunnel](https://github.com/krlvm/PowerTunnel)** by @krlvm (for Windows, MacOS and Linux)
-- **[PowerTunnel for Android](https://github.com/krlvm/PowerTunnel-Android)** by @krlvm (for Android)
-- **[SpoofDPI](https://github.com/xvzc/SpoofDPI)** by @xvzc (for macOS and Linux)
-- **[SpoofDPI-Platform](https://github.com/r3pr3ss10n/SpoofDPI-Platform)** by @r3pr3ss10n (for Android, macOS, Windows)
-- **[GhosTCP](https://github.com/macronut/ghostcp)** by @macronut (for Windows)
-- **[ByeDPI](https://github.com/hufrea/byedpi)** for Linux/Windows + **[ByeDPIAndroid](https://github.com/dovecoteescapee/ByeDPIAndroid/)** for Android (no root)
-- **[youtubeUnblock](https://github.com/Waujito/youtubeUnblock/)** by @Waujito (for OpenWRT/Entware routers and Linux)
+- **[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI)** от @ValdikSS (для Windows)
+- **[zapret](https://github.com/bol-van/zapret)** от @bol-van (для MacOS, Linux и Windows)
+- **[Green Tunnel](https://github.com/SadeghHayeri/GreenTunnel)** от @SadeghHayeri (для MacOS, Linux и Windows)
+- **[DPI Tunnel CLI](https://github.com/nomoresat/DPITunnel-cli)** от @zhenyolka (для Linux и роутеров)
+- **[DPI Tunnel для Android](https://github.com/nomoresat/DPITunnel-android)** от @zhenyolka (для Android)
+- **[PowerTunnel](https://github.com/krlvm/PowerTunnel)** от @krlvm (для Windows, macOS и Linux)
+- **[PowerTunnel для Android](https://github.com/krlvm/PowerTunnel-Android)** от @krlvm (для Android)
+- **[SpoofDPI](https://github.com/xvzc/SpoofDPI)** от @xvzc (для macOS и Linux)
+- **[SpoofDPI-Platform](https://github.com/r3pr3ss10n/SpoofDPI-Platform)** от @r3pr3ss10n (для Android, macOS, Windows)
+- **[GhosTCP](https://github.com/macronut/ghostcp)** от @macronut (для Windows)
+- **[ByeDPI](https://github.com/hufrea/byedpi)** для Linux/Windows + **[ByeDPIAndroid](https://github.com/dovecoteescapee/ByeDPIAndroid/)** для Android (без рута)
+- **[youtubeUnblock](https://github.com/Waujito/youtubeUnblock/)** от @Waujito (для роутеров OpenWRT/Entware и Linux)
 
-## Terms of Use and Disclaimer
+## Условия использования и отказ от ответственности
 
 > [!WARNING]
-> By using this software in any form or distributing it, you accept the following terms of use and disclaimer
+> Используя это программное обеспечение в любой форме или распространяя его, вы принимаете следующие условия использования и отказ от ответственности.
 
-The developer and/or supplier of this software shall not be liable for any loss or damage, including but not limited to direct, indirect, incidental, punitive or consequential damages arising out of the use of or inability to use this software, even if the developer or supplier has been advised of the possibility of such damages.
+Разработчик и/или поставщик данного программного обеспечения не несет никакой ответственности за любые убытки или ущерб, включая, но не ограничиваясь, прямые, косвенные, случайные, штрафные или косвенные убытки, возникшие в результате использования или невозможности использования данного программного обеспечения, даже если разработчик или поставщик были уведомлены о возможности таких убытков.
 
-The developer and/or supplier of this software shall not be liable for any legal consequences arising out of the use of this software. This includes, but is not limited to, violation of laws, rules or regulations, as well as any claims or suits arising out of the use of this software. The user is solely responsible for compliance with all applicable laws and regulations when using this software.
+Разработчик и/или поставщик данного программного обеспечения не несут ответственности за любые юридические последствия, возникшие в результате использования данного программного обеспечения. Это включает, но не ограничивается, нарушение законодательства, правил или нормативных актов, а также любые претензии или иски, возникшие в результате использования данного программного обеспечения. Пользователь несет полную ответственность за соблюдение всех применимых законов и нормативных актов при использовании данного программного обеспечения.
 
-The developer and/or supplier of this software shall not be liable for any loss or damage arising out of the unauthorized use of this software. Unauthorized use includes, but is not limited to, using the software for illegal purposes, infringing copyrights, patents, trademarks or other intellectual property rights, or using the software in violation of the license terms of the software.
+Разработчик и/или поставщик данного программного обеспечения не несут ответственности за любые убытки или ущерб, возникшие в результате неправомерного использования данного программного обеспечения. Неправомерное использование включает, но не ограничивается, использование программного обеспечения для незаконных целей, нарушение авторских прав, патентных прав, торговых марок или других прав интеллектуальной собственности, а также использование программного обеспечения в нарушение условий лицензии данного программного обеспечения.
 
-This software may not be used for illegal or unlawful purposes. Any use of the software for illegal activities, including but not limited to fraud, hacking, privacy violation, distribution of malware or any other actions contrary to the code and regulations is strictly prohibited. The user is fully responsible for any legal consequences arising from the use of this software for illegal purposes.
+Данное программное обеспечение не может использоваться в противоправных целях или целях, нарушающих законодательство. Любое использование программного обеспечения для незаконных действий, включая, но не ограничиваясь, мошенничество, взлом, нарушение конфиденциальности, распространение вредоносного ПО или любые другие действия, противоречащие закодательству и нормативным актам, строго запрещено. Пользователь несет полную ответственность за любые юридические последствия, возникшие в результате использования данного программного обеспечения в противоправных целях.
 
-Your use of this software constitutes your agreement to the terms of this disclaimer. If you do not agree to these terms, you must stop using this software immediately.
+Использование данного программного обеспечения означает ваше согласие с условиями данного отказа от ответственности. Если вы не согласны с этими условиями, вы должны немедленно прекратить использование данного программного обеспечения.
 
-## Quick start
+## Быстрый старт
 
-1) Download the latest version for your OS from [the Releases page](https://github.com/GVCoder09/NoDPI/releases) and unzip it
-2) Go to the directory with the unzipped utility and run it with the command `nodpi.exe --blacklist blacklist.txt` in Windows or `./nodpi --blacklist ./blacklist.txt` in Linux. You can replace the file `blacklist.txt` with your own file. **If the blacklist file is not specified, the program will search for the file `blacklist.txt` in the current directory by default.**
-3) In the browser or system settings, set the proxy to 127.0.0.1:8881
-4) Enjoy!
+1) Скачайте последнюю версию для вашей ОС со [страницы релизов](https://github.com/GVCoder09/NoDPI/releases) и распакуйте её.
+2) Перейдите в каталог с распакованной утилитой и запустите её командой `nodpi.exe --blacklist blacklist.txt` в Windows или `./nodpi --blacklist ./blacklist.txt` в Linux. Вы можете заменить файл `blacklist.txt` своим. **Если файл blacklist не указан, программа по умолчанию будет искать `blacklist.txt` в текущем каталоге.**
+3) В настройках браузера или системы настройте прокси на 127.0.0.1:8881
+4) Наслаждайтесь!
 
 > [!IMPORTANT]
-> Don't forget to disable the proxy in your system or browser settings after closing the program!
+> Не забудьте отключить прокси-сервер в настройках системы или браузера после закрытия программы!
 
-Please report any problems and malfunctions to us on [the Issues page](https://github.com/GVCoder09/NoDPI/issues)
+Пожалуйста, сообщайте нам о любых проблемах и неполадках на [странице Issues](https://github.com/GVCoder09/NoDPI/issues)
 
-### Additional Blacklists
+### Дополнительные списки
 
-By default, a blacklist containing YouTube-only domains is used. Additional lists can be found [here](https://github.com/GVCoder09/NoDPI/tree/main/blacklists).
+По умолчанию используется черный список, содержащий только домены YouTube. Дополнительные списки можно найти [здесь](https://github.com/GVCoder09/NoDPI/tree/main/blacklists).
 
-### Add to startup in Windows and Linux
+### Добавление в автозагрузку в Windows и Linux
 
 > [!NOTE]
-> This option is only available in executable versions
+> Эта опция доступна только в исполняемых версиях.
 
 > [!IMPORTANT]
-> Make sure the file `blacklist.txt` is located next to the executable file.
+> Убедитесь, что файл `blacklist.txt` находится в одной папке с исполняемым файлом.
 
-1) Run the command `nodpi --install`. The program will be added to startup via the Windows registry (`HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run`) or via `systemd` in Linux
-2) Restart your computer
-3) Enjoy!
+1) Выполните команду `nodpi --install`. Программа будет добавлена ​​в автозагрузку через реестр Windows (`HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run`) или через `systemd` в Linux.
+2) Перезагрузите компьютер.
+3) Наслаждайтесь!
 
-### Supported arguments
+### Поддерживаемые аргументы командной строки
 
 ```
-usage: nodpi [-h] [--host HOST] [--port PORT] [--out-host OUT_HOST] [--blacklist BLACKLIST | --no-blacklist | --autoblacklist]
-               [--fragment-method {random,sni}] [--domain-matching {loose,strict}] [--log-access LOG_ACCESS] [--log-error LOG_ERROR]
-               [-q] [--install | --uninstall]
+usage: nodpi [-h] [--config CONFIG] [--host HOST] [--port PORT]
+             [--out-host OUT_HOST]
+             [--blacklist BLACKLIST | --no-blacklist | --autoblacklist]
+             [--fragment-method {random,sni}]
+             [--domain-matching {loose,strict}]
+             [--auth-username AUTH_USERNAME]
+             [--auth-password AUTH_PASSWORD]
+             [--log-access LOG_ACCESS] [--log-error LOG_ERROR]
+             [--dns-retries DNS_RETRIES]
+             [--dns-retry-delay DNS_RETRY_DELAY]
+             [--dns-resolver DNS_RESOLVER] [--dns-timeout DNS_TIMEOUT]
+             [--connect-timeout CONNECT_TIMEOUT]
+             [--io-timeout IO_TIMEOUT]
+             [--read-chunk-size READ_CHUNK_SIZE] [-q] [--start-in-tray]
+             [--install | --uninstall]
 
 options:
   -h, --help            show this help message and exit
+  --config CONFIG       Path to JSON config file
   --host HOST           Proxy host
   --port PORT           Proxy port
   --out-host OUT_HOST   Outgoing proxy host
@@ -181,74 +190,142 @@ options:
                         Fragmentation method (random by default)
   --domain-matching {loose,strict}
                         Domain matching mode (strict by default)
+  --auth-username AUTH_USERNAME
+                        Proxy auth username
+  --auth-password AUTH_PASSWORD
+                        Proxy auth password
   --log-access LOG_ACCESS
                         Path to the access control log
   --log-error LOG_ERROR
                         Path to log file for errors
+  --dns-retries DNS_RETRIES
+                        Number of system DNS resolve retries before fallback
+  --dns-retry-delay DNS_RETRY_DELAY
+                        Delay between DNS retries in seconds
+  --dns-resolver DNS_RESOLVER
+                        Fallback DNS-over-TCP resolver IP address
+                        (can be used multiple times)
+  --dns-timeout DNS_TIMEOUT
+                        Timeout in seconds for DNS operations
+  --connect-timeout CONNECT_TIMEOUT
+                        Timeout in seconds for outbound TCP connect
+  --io-timeout IO_TIMEOUT
+                        Idle timeout in seconds for socket reads/writes
+  --read-chunk-size READ_CHUNK_SIZE
+                        Socket read chunk size
   -q, --quiet           Remove UI output
+  --start-in-tray       Start minimized to tray (Windows only)
   --install             Add proxy to Windows/Linux autostart (only for executable version)
   --uninstall           Remove proxy from Windows/Linux autostart (only for executable version)
 ```
 
-### Running on Windows 7
+### Работа на Windows 7
 
-There is no ready-to-use build for Windows 7 yet. To run NoDPI on this OS, you will need Python 3.7-3.8. You can also use the [Python embeddable package](https://www.python.org/ftp/python/3.8.8/python-3.8.8-embed-win32.zip), which does not require installation.
+Готовой сборки для Windows 7 пока нет. Текущая разработка, CI и Docker-окружение ориентированы на современный Python. Если вы хотите поэкспериментировать с совместимостью на Windows 7, вероятно, понадобится более старый Python, например 3.8, но такой сценарий сейчас активно не поддерживается.
 
-## Run from source code
+## Запуск из исходного кода
 
-1) Make sure you have Python 3.8 or higher installed. No third-party libraries are required
-2) Clone the repository `git clone https://github.com/GVCoder09/NoDPI.git` or [download the archive](https://github.com/GVCoder09/NoDPI/archive/refs/heads/main.zip) with the source code and unzip it
-3) Go to the main directory and run the code with the command `python3 src/main.py`
-4) In the browser or system settings, set the proxy to 127.0.0.1:8881
-5) Enjoy!
+1) Убедитесь, что у вас установлен Python 3.14 или выше. Сторонние runtime-зависимости не требуются.
+2) Склонируйте репозиторий `git clone https://github.com/zemecom/NoDPI.git` или [скачайте архив](https://github.com/zemecom/NoDPI/archive/refs/heads/main.zip) с исходным кодом и распакуйте его.
+3) Перейдите в корневой каталог и запустите код командой `python3 src/main.py`.
+4) В настройках браузера или системы установите прокси-сервер на 127.0.0.1:8881.
+5) Наслаждайтесь!
 
-You can enable error or access logging using parameters `--log_error` and `--log_access`
+Вы можете включить логирование ошибок и доступа с помощью параметров `--log_error` и `--log_access`.
 
-## Building the executable
+### Команды Makefile
 
-1) Make sure you have Python 3.8 or higher installed.
-2) Install pyinstaller: `pip install pyinstaller`
-3) Clone the repository `git clone https://github.com/GVCoder09/NoDPI.git` or [download the archive](https://github.com/GVCoder09/NoDPI/archive/refs/heads/main.zip) with the source code and unzip it
-4) Go to the main directory and run the command `pyinstaller ./nodpi.spec`
-5) The compiled file will be located in ist folder `./dist`
+Для локальной разработки можно использовать готовый `Makefile`:
 
-## Run in Docker
+```bash
+make install-deps
+make up
+make test
+make lint
+make ci-check
+make install-hooks
+```
 
-1) [Install Docker](https://docs.docker.com/).
-2) Clone the repository: `git clone https://github.com/GVCoder09/NoDPI`
-3) Navigate to the project directory and build the container: 
+`make up` запускает NoDPI с текущей локальной конфигурацией, `make lint` запускает `ruff`, а `make ci-check` прогоняет синтаксические проверки, линт и тесты.
+
+Один раз выполните `make install-hooks`, чтобы подключить версионируемые git hooks из `.githooks/`. После этого каждый `git commit` будет сначала прогонять те же локальные проверки, что и `make ci-check`.
+
+`make install-deps` устанавливает локальные dev-зависимости из [requirements-dev.txt](./requirements-dev.txt). Для runtime сторонние зависимости не нужны; файл [requirements.txt](./requirements.txt) оставлен пустым, кроме поясняющего комментария.
+
+### Конфиг-файл и переменные окружения
+
+Теперь NoDPI поддерживает JSON-конфиг и переопределение настроек через переменные окружения. В качестве шаблона можно использовать [nodpi.example.json](./nodpi.example.json).
+
+Пример:
+
+```bash
+python3 src/main.py --config ./nodpi.example.json
+```
+
+Если в корне проекта есть `./nodpi.json`, NoDPI подхватывает его автоматически даже без `--config`. Для альтернативного файла можно использовать `--config` или `NODPI_CONFIG`.
+
+Отдельные параметры можно переопределять через `NODPI_HOST`, `NODPI_PORT`, `NODPI_DNS_RESOLVERS`, `NODPI_CONNECT_TIMEOUT` и `NODPI_IO_TIMEOUT`.
+
+### Диагностика DNS и таймаутов
+
+Если провайдер периодически ломает UDP DNS для проблемных доменов, запускайте NoDPI с более устойчивой DNS-стратегией:
+
+```bash
+python3 src/main.py \
+  --dns-retries 3 \
+  --dns-retry-delay 0.2 \
+  --dns-timeout 2.0 \
+  --dns-resolver 8.8.8.8 \
+  --dns-resolver 1.1.1.1 \
+  --connect-timeout 5 \
+  --io-timeout 30
+```
+
+DNS-сбои теперь пишутся в лог с полями `host`, `resolver_path`, `attempts`, финальным `reason` и `system_reason`.
+
+## Сборка исполняемого файла
+
+1) Убедитесь, что у вас установлен Python 3.14 или выше.
+2) Установите pyinstaller: `pip install pyinstaller`
+3) Клонируйте репозиторий `git clone https://github.com/zemecom/NoDPI.git` или [скачайте архив](https://github.com/zemecom/NoDPI/archive/refs/heads/main.zip) с исходным кодом и распакуйте его.
+4) Перейдите в корневой каталог и выполните команду `pyinstaller ./nodpi.spec`
+5) Скомпилированный файл будет находиться в папке `./dist`
+
+## Запуск в Docker
+
+1) [Установите Docker](https://docs.docker.com/).
+2) Клонируйте репозиторий: `git clone https://github.com/GVCoder09/NoDPI`
+3) Перейдите в каталог проекта и соберите контейнер:
    ```bash
    cd NoDPI
    sudo docker build -t nodpi-proxy .
    ```
-4) Run the container with the command: 
+4) Создайте локальный runtime-конфиг `nodpi.json` и убедитесь, что он ссылается на `blacklist.txt` как на путь к blacklist.
+5) Запустите контейнер командой:
    ```bash
    sudo docker run -d \
     --name nodpi \
     -p 8881:8881 \
-    -v $(pwd)/blacklist.txt:/tmp/nodpi/blacklist.txt \
-    nodpi-proxy \
-    --host 127.0.0.1 \
-    --port 8881 \
-    --blacklist /tmp/nodpi/blacklist.txt \
-    --quiet
+    -v $(pwd)/nodpi.json:/app/nodpi.json:ro \
+    -v $(pwd)/blacklist.txt:/app/blacklist.txt:ro \
+    nodpi-proxy
     ```
-5) Enjoy!
+6) Наслаждайтесь!
 
 ## FAQ
 
-*Q: Is using NoDPI legal in Russia?*
+*В: Законно ли использование NoDPI в России?*
 
-A: Yes, its usage is completely legal as of October 2025. However, you can be held administratively liable for advertising and distributing tools designed to circumvent blocking.
+О: Да, его использование полностью законно по состоянию на октябрь 2025 года. Однако вы можете быть привлечены к административной ответственности за рекламу и распространение инструментов, предназначенных для обхода блокировок.
 
-*Q: Is it safe?*
+*В: Безопасно ли это?*
 
-A: Yes, using this utility is safe. All traffic sent over HTTPS remains encrypted as it was before. Furthermore, we do not collect any user information.
+О: Да, использование этой утилиты безопасно. Весь трафик, передаваемый по HTTPS, остаётся зашифрованным, как и раньше. Более того, мы не собираем никакой информации о пользователях.
 
-*Q: Does this program mask my traffic? Can my ISP not see which sites I visit?*
+*В: Эта программа маскирует мой трафик? Провайдер не видит какие сайты я посещаю?*
 
-A: No. Unlike a VPN or Tor, this program does not hide your traffic from your Internet Service Provider (ISP). Your ISP can still see the IP addresses of the websites you connect to.
+О: Нет, в отличии от VPN или Tor, эта программа не скрывает трафик от провайдера. Он по прежнему может видеть IP адреса сайтов, к которым вы обращаетесь.
 
-## Star History
+## История звезд проекта
 
 [![Star History Chart](https://api.star-history.com/svg?repos=GVCoder09/NoDPI&type=Date)](https://www.star-history.com/#GVCoder09/NoDPI&Date)

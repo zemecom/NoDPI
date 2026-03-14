@@ -1,0 +1,2 @@
+# NoDPI does not require third-party runtime dependencies.
+# The proxy itself runs on the Python standard library.
