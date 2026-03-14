@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-
 from typing import Optional
 
 from .contracts import ILogger
@@ -23,9 +22,7 @@ class ProxyLogger(ILogger):
         self.error_counter_callback = None
         self.setup_logging(log_access_file, log_error_file)
 
-    def setup_logging(
-        self, log_access_file: Optional[str], log_error_file: Optional[str]
-    ) -> None:
+    def setup_logging(self, log_access_file: Optional[str], log_error_file: Optional[str]) -> None:
         """Setup logging configuration."""
 
         class ErrorCounterHandler(logging.FileHandler):
@@ -43,9 +40,7 @@ class ProxyLogger(ILogger):
                 self.increment_errors, log_error_file, encoding="utf-8"
             )
             error_handler.setFormatter(
-                logging.Formatter(
-                    "[%(asctime)s][%(levelname)s]: %(message)s", "%Y-%m-%d %H:%M:%S"
-                )
+                logging.Formatter("[%(asctime)s][%(levelname)s]: %(message)s", "%Y-%m-%d %H:%M:%S")
             )
             error_handler.setLevel(logging.ERROR)
             error_handler.addFilter(lambda record: record.levelno == logging.ERROR)

@@ -8,7 +8,6 @@ import os
 import sys
 import textwrap
 import time
-
 from datetime import datetime
 from urllib.error import URLError
 from urllib.request import Request, urlopen
@@ -48,18 +47,14 @@ class ProxyRuntimeUI:
 
             def sync_check():
                 try:
-                    req = Request(
-                        "https://gvcoder09.github.io/nodpi_site/api/v1/update_info.json"
-                    )
+                    req = Request("https://gvcoder09.github.io/nodpi_site/api/v1/update_info.json")
                     with urlopen(req, timeout=3) as response:
                         if response.status == 200:
                             data = json.loads(response.read())
-                            latest_version = data.get("nodpi", {}).get(
-                                "latest_version", ""
-                            )
+                            latest_version = data.get("nodpi", {}).get("latest_version", "")
                             if latest_version and latest_version != __version__:
                                 return latest_version
-                except (URLError, json.JSONDecodeError, Exception):
+                except URLError, json.JSONDecodeError, Exception:
                     pass
                 return None
 
@@ -67,10 +62,7 @@ class ProxyRuntimeUI:
             if latest_version:
                 self.update_available = latest_version
                 self.update_event.set()
-                return (
-                    f"\033[93m[UPDATE]: Available new version: "
-                    f"v{latest_version} \033[97m"
-                )
+                return f"\033[93m[UPDATE]: Available new version: v{latest_version} \033[97m"
         except Exception:
             pass
         finally:
@@ -110,28 +102,19 @@ class ProxyRuntimeUI:
         left_padding = (console_width - 76) // 2
 
         self.logger.info("\n\n\n")
-        self.logger.info(
-            "\033[91m" + " " * left_padding + "╔" + "═" * 72 + "╗" + "\033[0m"
-        )
+        self.logger.info("\033[91m" + " " * left_padding + "╔" + "═" * 72 + "╗" + "\033[0m")
         for line in wrapped_text:
             self.logger.info(
-                "\033[91m"
-                + " " * left_padding
-                + "║ "
-                + line.ljust(70)
-                + " ║"
-                + "\033[0m"
+                "\033[91m" + " " * left_padding + "║ " + line.ljust(70) + " ║" + "\033[0m"
             )
-        self.logger.info(
-            "\033[91m" + " " * left_padding + "╚" + "═" * 72 + "╝" + "\033[0m"
-        )
+        self.logger.info("\033[91m" + " " * left_padding + "╚" + "═" * 72 + "╝" + "\033[0m")
         time.sleep(1)
 
         update_message = None
         if self.update_check_task and self.update_check_task.done():
             try:
                 update_message = self.update_check_task.result()
-            except (asyncio.CancelledError, Exception):
+            except asyncio.CancelledError, Exception:
                 pass
 
         self.logger.info("\033[2J\033[H")
@@ -148,9 +131,7 @@ class ProxyRuntimeUI:
         """
         )
         self.logger.info(f"\033[92mVersion: {__version__}".center(50))
-        self.logger.info(
-            "\033[97m" + "Enjoy watching! / Наслаждайтесь просмотром!".center(50)
-        )
+        self.logger.info("\033[97m" + "Enjoy watching! / Наслаждайтесь просмотром!".center(50))
         self.logger.info("\n")
         if update_message:
             self.logger.info(update_message)
@@ -202,9 +183,7 @@ class ProxyRuntimeUI:
         else:
             self.logger.info("\033[92m[INFO]:\033[97m Access logging is disabled")
         self.logger.info("")
-        self.logger.info(
-            "\033[92m[INFO]:\033[97m To stop the proxy, press Ctrl+C twice"
-        )
+        self.logger.info("\033[92m[INFO]:\033[97m To stop the proxy, press Ctrl+C twice")
         self.logger.info("")
 
     async def display_stats(self) -> None:

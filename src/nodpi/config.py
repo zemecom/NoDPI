@@ -6,7 +6,6 @@ import argparse
 import json
 import os
 import sys
-
 from dataclasses import dataclass, fields
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -60,9 +59,7 @@ class ConfigLoader:
         parser.add_argument("--out-host", default=None, help="Outgoing proxy host")
 
         blacklist_group = parser.add_mutually_exclusive_group()
-        blacklist_group.add_argument(
-            "--blacklist", default=None, help="Path to blacklist file"
-        )
+        blacklist_group.add_argument("--blacklist", default=None, help="Path to blacklist file")
         blacklist_group.add_argument(
             "--no-blacklist",
             action="store_true",

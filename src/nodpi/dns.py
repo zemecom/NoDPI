@@ -6,7 +6,6 @@ import asyncio
 import random
 import socket
 import struct
-
 from ipaddress import ip_address
 from typing import List, Optional, Tuple
 
@@ -67,7 +66,7 @@ class DNSResolver:
                 continue
 
             offset += 1
-            labels.append(message[offset: offset + length].decode("idna"))
+            labels.append(message[offset : offset + length].decode("idna"))
             offset += length
             if not jumped:
                 next_offset = offset
@@ -91,11 +90,9 @@ class DNSResolver:
         answers = []
         for _ in range(ancount):
             _, offset = self.read_dns_name(payload, offset)
-            rtype, rclass, _, rdlength = struct.unpack(
-                "!HHIH", payload[offset: offset + 10]
-            )
+            rtype, rclass, _, rdlength = struct.unpack("!HHIH", payload[offset : offset + 10])
             offset += 10
-            rdata = payload[offset: offset + rdlength]
+            rdata = payload[offset : offset + rdlength]
             offset += rdlength
             if rtype == 1 and rclass == 1 and rdlength == 4:
                 answers.append(socket.inet_ntoa(rdata))
@@ -126,18 +123,12 @@ class DNSResolver:
                 timeout=self.config.dns_system_timeout,
             )
         except asyncio.TimeoutError as exc:
-            raise DnsResolveError(
-                host, port, "timeout", 1, "system", exc, "system"
-            ) from exc
+            raise DnsResolveError(host, port, "timeout", 1, "system", exc, "system") from exc
         except socket.gaierror as exc:
             reason_code = (
-                "temporary_failure"
-                if exc.errno == socket.EAI_AGAIN
-                else "system_resolver_error"
+                "temporary_failure" if exc.errno == socket.EAI_AGAIN else "system_resolver_error"
             )
-            raise DnsResolveError(
-                host, port, reason_code, 1, "system", exc, "system"
-            ) from exc
+            raise DnsResolveError(host, port, reason_code, 1, "system", exc, "system") from exc
 
         if not addr_info:
             raise DnsResolveError(
@@ -179,9 +170,7 @@ class DNSResolver:
                     timeout=self.config.dns_tcp_timeout,
                 )
                 writer.write(packet)
-                await asyncio.wait_for(
-                    writer.drain(), timeout=self.config.dns_tcp_timeout
-                )
+                await asyncio.wait_for(writer.drain(), timeout=self.config.dns_tcp_timeout)
                 raw_length = await asyncio.wait_for(
                     reader.readexactly(2), timeout=self.config.dns_tcp_timeout
                 )
@@ -202,13 +191,9 @@ class DNSResolver:
                     )
                 if status == "nxdomain":
                     saw_nxdomain = True
-                    last_exception = RuntimeError(
-                        f"NXDOMAIN confirmed by TCP resolver {resolver}"
-                    )
+                    last_exception = RuntimeError(f"NXDOMAIN confirmed by TCP resolver {resolver}")
                     continue
-                last_exception = RuntimeError(
-                    f"Fallback resolver {resolver} returned {status}"
-                )
+                last_exception = RuntimeError(f"Fallback resolver {resolver} returned {status}")
             except asyncio.TimeoutError as exc:
                 saw_timeout = True
                 last_exception = exc
@@ -238,9 +223,7 @@ class DNSResolver:
                 ",".join(self.config.dns_resolvers),
             )
 
-        reason_code = (
-            "timeout" if saw_timeout and last_exception else "fallback_resolver_error"
-        )
+        reason_code = "timeout" if saw_timeout and last_exception else "fallback_resolver_error"
         raise DnsResolveError(
             host,
             port,

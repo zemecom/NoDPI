@@ -67,14 +67,13 @@ class Statistics(IStatistics):
     def get_stats_display(self) -> str:
         col_width = 30
 
-        conns_stat = f"\033[97mTotal: \033[93m{self.total_connections}\033[0m".ljust(
-            col_width
-        ) + "\033[97m| " + f"\033[97mMiss: \033[96m{self.allowed_connections}\033[0m".ljust(
-            col_width
-        ) + "\033[97m| " + f"\033[97mUnblock: \033[92m{self.blocked_connections}\033[0m".ljust(
-            col_width
-        ) + "\033[97m| " f"\033[97mErrors: \033[91m{self.errors_connections}\033[0m".ljust(
-            col_width
+        conns_stat = (
+            f"\033[97mTotal: \033[93m{self.total_connections}\033[0m".ljust(col_width)
+            + "\033[97m| "
+            + f"\033[97mMiss: \033[96m{self.allowed_connections}\033[0m".ljust(col_width)
+            + "\033[97m| "
+            + f"\033[97mUnblock: \033[92m{self.blocked_connections}\033[0m".ljust(col_width)
+            + f"\033[97m| \033[97mErrors: \033[91m{self.errors_connections}\033[0m".ljust(col_width)
         )
 
         traffic_stat = (
@@ -82,13 +81,9 @@ class Statistics(IStatistics):
                 col_width
             )
             + "\033[97m| "
-            + f"\033[97mDL: \033[96m{self.format_size(self.traffic_in)}\033[0m".ljust(
-                col_width
-            )
+            + f"\033[97mDL: \033[96m{self.format_size(self.traffic_in)}\033[0m".ljust(col_width)
             + "\033[97m| "
-            + f"\033[97mUL: \033[96m{self.format_size(self.traffic_out)}\033[0m".ljust(
-                col_width
-            )
+            + f"\033[97mUL: \033[96m{self.format_size(self.traffic_out)}\033[0m".ljust(col_width)
             + "\033[97m| "
         )
 
@@ -96,21 +91,13 @@ class Statistics(IStatistics):
         avg_speed_out = self.average_speed_out[0] / self.average_speed_out[1]
 
         speed_stat = (
-            f"\033[97mDL: \033[96m{self.format_speed(self.speed_in)}\033[0m".ljust(
-                col_width
-            )
+            f"\033[97mDL: \033[96m{self.format_speed(self.speed_in)}\033[0m".ljust(col_width)
             + "\033[97m| "
-            + f"\033[97mUL: \033[96m{self.format_speed(self.speed_out)}\033[0m".ljust(
-                col_width
-            )
+            + f"\033[97mUL: \033[96m{self.format_speed(self.speed_out)}\033[0m".ljust(col_width)
             + "\033[97m| "
-            + f"\033[97mAVG DL: \033[96m{self.format_speed(avg_speed_in)}\033[0m".ljust(
-                col_width
-            )
+            + f"\033[97mAVG DL: \033[96m{self.format_speed(avg_speed_in)}\033[0m".ljust(col_width)
             + "\033[97m| "
-            + f"\033[97mAVG UL: \033[96m{self.format_speed(avg_speed_out)}\033[0m".ljust(
-                col_width
-            )
+            + f"\033[97mAVG UL: \033[96m{self.format_speed(avg_speed_out)}\033[0m".ljust(col_width)
         )
 
         title = "STATISTICS"
@@ -119,9 +106,7 @@ class Statistics(IStatistics):
         line_traffic = f"\033[92m   {'Traffic'.ljust(8)}:\033[0m {traffic_stat}\033[0m"
         line_speed = f"\033[92m   {'Speed'.ljust(8)}:\033[0m {speed_stat}\033[0m"
         bottom_border = f"\033[92m{'═' * (36 * 2 + len(title) + 2)}\033[0m"
-        return (
-            f"{top_border}\n{line_conns}\n{line_traffic}\n{line_speed}\n{bottom_border}"
-        )
+        return f"{top_border}\n{line_conns}\n{line_traffic}\n{line_speed}\n{bottom_border}"
 
     @staticmethod
     def format_size(size: int) -> str:

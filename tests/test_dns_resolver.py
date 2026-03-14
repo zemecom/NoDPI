@@ -133,8 +133,12 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
             return result
 
         with (
-            patch.object(self.handler, "_resolve_via_system", side_effect=resolve_side_effect) as system_mock,
-            patch.object(self.handler, "_resolve_via_tcp_dns", new_callable=AsyncMock) as fallback_mock,
+            patch.object(
+                self.handler, "_resolve_via_system", side_effect=resolve_side_effect
+            ) as system_mock,
+            patch.object(
+                self.handler, "_resolve_via_tcp_dns", new_callable=AsyncMock
+            ) as fallback_mock,
         ):
             resolved = await self.handler._resolve_target("www.youtube.com", 443)
 
@@ -191,29 +195,32 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn("HTTP/1.1 504 Gateway Timeout", writer.buffer.decode())
 
     async def test_failed_lookup_does_not_poison_future_resolve(self):
-        with patch.object(
-            self.handler,
-            "_resolve_via_system",
-            side_effect=DnsResolveError(
-                "www.youtube.com",
-                443,
-                "system_resolver_error",
-                1,
-                "system",
-                socket.gaierror(socket.EAI_NONAME, "not known"),
-                resolver_used="system",
+        with (
+            patch.object(
+                self.handler,
+                "_resolve_via_system",
+                side_effect=DnsResolveError(
+                    "www.youtube.com",
+                    443,
+                    "system_resolver_error",
+                    1,
+                    "system",
+                    socket.gaierror(socket.EAI_NONAME, "not known"),
+                    resolver_used="system",
+                ),
             ),
-        ), patch.object(
-            self.handler,
-            "_resolve_via_tcp_dns",
-            side_effect=DnsResolveError(
-                "www.youtube.com",
-                443,
-                "timeout",
-                2,
-                "fallback-tcp",
-                asyncio.TimeoutError(),
-                resolver_used="8.8.8.8",
+            patch.object(
+                self.handler,
+                "_resolve_via_tcp_dns",
+                side_effect=DnsResolveError(
+                    "www.youtube.com",
+                    443,
+                    "timeout",
+                    2,
+                    "fallback-tcp",
+                    asyncio.TimeoutError(),
+                    resolver_used="8.8.8.8",
+                ),
             ),
         ):
             with self.assertRaises(DnsResolveError):
@@ -231,29 +238,32 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resolved.ip, "142.250.74.110")
 
     async def test_fallback_failure_preserves_final_reason_and_system_context(self):
-        with patch.object(
-            self.handler,
-            "_resolve_via_system",
-            side_effect=DnsResolveError(
-                "googleads.g.doubleclick.net",
-                443,
-                "system_resolver_error",
-                1,
-                "system",
-                socket.gaierror(socket.EAI_NONAME, "not known"),
-                resolver_used="system",
+        with (
+            patch.object(
+                self.handler,
+                "_resolve_via_system",
+                side_effect=DnsResolveError(
+                    "googleads.g.doubleclick.net",
+                    443,
+                    "system_resolver_error",
+                    1,
+                    "system",
+                    socket.gaierror(socket.EAI_NONAME, "not known"),
+                    resolver_used="system",
+                ),
             ),
-        ), patch.object(
-            self.handler,
-            "_resolve_via_tcp_dns",
-            side_effect=DnsResolveError(
-                "googleads.g.doubleclick.net",
-                443,
-                "fallback_resolver_error",
-                2,
-                "fallback-tcp",
-                RuntimeError("Fallback resolver 1.1.1.1 returned temporary_failure"),
-                resolver_used="8.8.8.8,1.1.1.1",
+            patch.object(
+                self.handler,
+                "_resolve_via_tcp_dns",
+                side_effect=DnsResolveError(
+                    "googleads.g.doubleclick.net",
+                    443,
+                    "fallback_resolver_error",
+                    2,
+                    "fallback-tcp",
+                    RuntimeError("Fallback resolver 1.1.1.1 returned temporary_failure"),
+                    resolver_used="8.8.8.8,1.1.1.1",
+                ),
             ),
         ):
             with self.assertRaises(DnsResolveError) as context:
@@ -310,7 +320,9 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
                     "8.8.8.8",
                 ),
             ),
-            patch("nodpi.dns.asyncio.open_connection", new_callable=AsyncMock) as open_connection_mock,
+            patch(
+                "nodpi.dns.asyncio.open_connection", new_callable=AsyncMock
+            ) as open_connection_mock,
             patch.object(self.handler, "_handle_initial_tls_data", new_callable=AsyncMock),
             patch.object(self.handler, "_setup_piping", new_callable=AsyncMock),
         ):

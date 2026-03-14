@@ -7,7 +7,6 @@ import subprocess
 import sys
 import threading
 import time
-
 from pathlib import Path
 from typing import Optional
 
@@ -236,9 +235,7 @@ if sys.platform == "win32":
             ctypes.windll.user32.AppendMenuW(
                 hmenu, MF_STRING, ID_TRAY_SHOW, ctypes.c_wchar_p("Show")
             )
-            ctypes.windll.user32.AppendMenuW(
-                hmenu, MF_SEPARATOR, 0, ctypes.c_wchar_p(None)
-            )
+            ctypes.windll.user32.AppendMenuW(hmenu, MF_SEPARATOR, 0, ctypes.c_wchar_p(None))
             ctypes.windll.user32.AppendMenuW(
                 hmenu, MF_STRING, ID_TRAY_EXIT, ctypes.c_wchar_p("Exit")
             )
@@ -374,9 +371,7 @@ WantedBy=default.target
                 subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
                 subprocess.run(["systemctl", "--user", "enable", service_name], check=True)
                 subprocess.run(["systemctl", "--user", "start", service_name], check=True)
-                print(
-                    f"\033[92m[INFO]:\033[97m Service installed and started: {service_name}"
-                )
+                print(f"\033[92m[INFO]:\033[97m Service installed and started: {service_name}")
                 print("\033[93m[NOTE]:\033[97m Service will auto-start on login")
             except subprocess.CalledProcessError as error:
                 print(f"\033[91m[ERROR]: Systemd command failed: {error}\033[0m")

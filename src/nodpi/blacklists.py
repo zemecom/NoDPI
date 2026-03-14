@@ -5,7 +5,6 @@ from __future__ import annotations
 import os
 import ssl
 import sys
-
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -68,9 +67,7 @@ class AutoBlacklistManager(IBlacklistManager):
             return
 
         try:
-            request = Request(
-                f"https://{decoded_domain}", headers={"User-Agent": "Mozilla/5.0"}
-            )
+            request = Request(f"https://{decoded_domain}", headers={"User-Agent": "Mozilla/5.0"})
             context = ssl._create_unverified_context()
             with urlopen(request, timeout=4, context=context):
                 self.whitelist.append(decoded_domain)

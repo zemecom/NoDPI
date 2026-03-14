@@ -14,9 +14,7 @@ class ConnectionInfo:
     src_ip: str
     dst_domain: str
     method: str
-    start_time: str = field(
-        default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    )
+    start_time: str = field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     traffic_in: int = 0
     traffic_out: int = 0
 
@@ -57,6 +55,4 @@ class DnsResolveError(Exception):
         self.resolver_used = resolver_used or "-"
         self.system_reason_code = system_reason_code
         self.system_exception = system_exception
-        super().__init__(
-            f"DNS resolve failed for {host}:{port} ({reason_code}, {resolver_path})"
-        )
+        super().__init__(f"DNS resolve failed for {host}:{port} ({reason_code}, {resolver_path})")

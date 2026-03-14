@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -21,8 +21,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tooling
-        run: python -m pip install --upgrade pip ruff
-      - name: Lint
-        run: ruff check .
-      - name: Run unit tests
-        run: python -m unittest discover -s tests -v
+        run: python -m pip install --upgrade pip -r requirements-dev.txt
+      - name: Run local-equivalent CI checks
+        run: make ci-check

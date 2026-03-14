@@ -2,8 +2,8 @@
 
 """Compatibility entrypoint for NoDPI."""
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:

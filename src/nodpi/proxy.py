@@ -8,7 +8,6 @@ import random
 import socket
 import sys
 import traceback
-
 from typing import Dict, List, Optional, Tuple
 
 from .blacklists import AutoBlacklistManager, NoBlacklistManager
@@ -61,9 +60,7 @@ class ConnectionHandler(IConnectionHandler):
             conn_key = (client_ip, client_port)
             conn_info = ConnectionInfo(client_ip, host.decode(), method.decode())
 
-            if method == b"CONNECT" and isinstance(
-                self.blacklist_manager, AutoBlacklistManager
-            ):
+            if method == b"CONNECT" and isinstance(self.blacklist_manager, AutoBlacklistManager):
                 await self.blacklist_manager.check_domain(host)
 
             async with self.connections_lock:
@@ -76,13 +73,9 @@ class ConnectionHandler(IConnectionHandler):
                 return
 
             if method == b"CONNECT":
-                await self._handle_https_connection(
-                    reader, writer, host, port, conn_key, conn_info
-                )
+                await self._handle_https_connection(reader, writer, host, port, conn_key, conn_info)
             else:
-                await self._handle_http_connection(
-                    reader, writer, http_data, host, port, conn_key
-                )
+                await self._handle_http_connection(reader, writer, http_data, host, port, conn_key)
         except DnsResolveError as error:
             await self._handle_dns_resolve_error(writer, conn_key, error)
         except asyncio.TimeoutError:
@@ -111,9 +104,7 @@ class ConnectionHandler(IConnectionHandler):
             host = host_port[0]
             port = int(host_port[1]) if len(host_port) > 1 else 443
         else:
-            host_header = next(
-                (item for item in headers if item.startswith(b"Host: ")), None
-            )
+            host_header = next((item for item in headers if item.startswith(b"Host: ")), None)
             if not host_header:
                 raise ValueError("Missing Host header")
             host_port = host_header[6:].split(b":")
@@ -321,9 +312,7 @@ class ConnectionHandler(IConnectionHandler):
 
         try:
             head = await asyncio.wait_for(reader.read(5), timeout=self.config.io_timeout)
-            data = await asyncio.wait_for(
-                reader.read(2048), timeout=self.config.io_timeout
-            )
+            data = await asyncio.wait_for(reader.read(2048), timeout=self.config.io_timeout)
         except Exception:
             self.logger.log_error(f"{host.decode()} : {traceback.format_exc()}")
             return
@@ -372,9 +361,7 @@ class ConnectionHandler(IConnectionHandler):
                 part_end = data[sni_pos[1] :]
                 middle = (len(sni_data) + 1) // 2
                 parts.append(
-                    bytes.fromhex("160304")
-                    + len(part_start).to_bytes(2, "big")
-                    + part_start
+                    bytes.fromhex("160304") + len(part_start).to_bytes(2, "big") + part_start
                 )
                 parts.append(
                     bytes.fromhex("160304")
@@ -386,11 +373,7 @@ class ConnectionHandler(IConnectionHandler):
                     + len(sni_data[middle:]).to_bytes(2, "big")
                     + sni_data[middle:]
                 )
-                parts.append(
-                    bytes.fromhex("160304")
-                    + len(part_end).to_bytes(2, "big")
-                    + part_end
-                )
+                parts.append(bytes.fromhex("160304") + len(part_end).to_bytes(2, "big") + part_end)
         elif self.config.fragment_method == "random":
             host_end = data.find(b"\x00")
             if host_end != -1:
@@ -404,9 +387,7 @@ class ConnectionHandler(IConnectionHandler):
             while data:
                 chunk_len = random.randint(1, len(data))
                 part_data = (
-                    bytes.fromhex("160304")
-                    + chunk_len.to_bytes(2, "big")
-                    + data[:chunk_len]
+                    bytes.fromhex("160304") + chunk_len.to_bytes(2, "big") + data[:chunk_len]
                 )
                 parts.append(part_data)
                 data = data[chunk_len:]
@@ -472,18 +453,14 @@ class ConnectionHandler(IConnectionHandler):
         except asyncio.CancelledError:
             pass
         except asyncio.TimeoutError:
-            self.logger.log_error(
-                f"pipe_timeout direction={direction} conn_key={conn_key}"
-            )
+            self.logger.log_error(f"pipe_timeout direction={direction} conn_key={conn_key}")
         except Exception:
             domain = conn_info.dst_domain if conn_info else "unknown"
             self.logger.log_error(f"{domain} : {traceback.format_exc()}")
         finally:
             await self._finalize_pipe(writer, conn_key)
 
-    async def _finalize_pipe(
-        self, writer: asyncio.StreamWriter, conn_key: Tuple
-    ) -> None:
+    async def _finalize_pipe(self, writer: asyncio.StreamWriter, conn_key: Tuple) -> None:
         """Close one writer and emit access log once the connection is done."""
 
         try:
@@ -521,9 +498,7 @@ class ConnectionHandler(IConnectionHandler):
         await writer.drain()
         self.statistics.update_traffic(len(response), 0)
 
-    async def _handle_connection_error(
-        self, writer: asyncio.StreamWriter, conn_key: Tuple
-    ) -> None:
+    async def _handle_connection_error(self, writer: asyncio.StreamWriter, conn_key: Tuple) -> None:
         """Handle generic unexpected connection failures."""
 
         try:
@@ -562,9 +537,7 @@ class ConnectionHandler(IConnectionHandler):
             "fallback_resolver_error": (502, "Bad Gateway"),
             "timeout": (504, "Gateway Timeout"),
         }
-        status_code, status_text = status_map.get(
-            error.reason_code, (502, "Bad Gateway")
-        )
+        status_code, status_text = status_map.get(error.reason_code, (502, "Bad Gateway"))
         message = (
             f"DNS resolve failed for host {error.host}:{error.port} "
             f"({error.reason_code}, {error.resolver_path})"
@@ -585,9 +558,7 @@ class ConnectionHandler(IConnectionHandler):
         last_exception_type = type(last_exception).__name__ if last_exception else "-"
         last_exception_text = str(last_exception) if last_exception else "-"
         system_exception = error.system_exception
-        system_exception_type = (
-            type(system_exception).__name__ if system_exception else "-"
-        )
+        system_exception_type = type(system_exception).__name__ if system_exception else "-"
         system_exception_text = str(system_exception) if system_exception else "-"
         dst_domain = conn_info.dst_domain if conn_info else error.host
         self.logger.log_error(
@@ -630,9 +601,7 @@ class ProxyServer:
         self.blacklist_manager = blacklist_manager
         self.statistics = statistics
         self.logger = logger
-        self.connection_handler = ConnectionHandler(
-            config, blacklist_manager, statistics, logger
-        )
+        self.connection_handler = ConnectionHandler(config, blacklist_manager, statistics, logger)
         self.runtime_ui = ProxyRuntimeUI(config, blacklist_manager, statistics, logger)
         self.server = None
         logger.set_error_counter_callback(statistics.increment_error_connections)
