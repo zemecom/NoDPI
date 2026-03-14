@@ -200,6 +200,35 @@ options:
 
 Вы можете включить логирование ошибок и доступа с помощью параметров `--log_error` и `--log_access`.
 
+### Конфиг-файл и переменные окружения
+
+Теперь NoDPI поддерживает JSON-конфиг и переопределение настроек через переменные окружения. В качестве шаблона можно использовать [nodpi.example.json](/Users/aleksandrzemlanuhin/Dev/PROJECTS/TOOLS/NoDPI/nodpi.example.json).
+
+Пример:
+
+```bash
+python3 src/main.py --config ./nodpi.example.json
+```
+
+Отдельные параметры можно переопределять через `NODPI_HOST`, `NODPI_PORT`, `NODPI_DNS_RESOLVERS`, `NODPI_CONNECT_TIMEOUT` и `NODPI_IO_TIMEOUT`.
+
+### Диагностика DNS и таймаутов
+
+Если провайдер периодически ломает UDP DNS для проблемных доменов, запускайте NoDPI с более устойчивой DNS-стратегией:
+
+```bash
+python3 src/main.py \
+  --dns-retries 3 \
+  --dns-retry-delay 0.2 \
+  --dns-timeout 2.0 \
+  --dns-resolver 8.8.8.8 \
+  --dns-resolver 1.1.1.1 \
+  --connect-timeout 5 \
+  --io-timeout 30
+```
+
+DNS-сбои теперь пишутся в лог с полями `host`, `resolver_path`, `attempts` и типом исключения.
+
 ## Сборка исполняемого файла
 
 1) Убедитесь, что у вас установлен Python 3.8 или выше.

@@ -204,6 +204,35 @@ There is no ready-to-use build for Windows 7 yet. To run NoDPI on this OS, you w
 
 You can enable error or access logging using parameters `--log_error` and `--log_access`
 
+### Configuration file and environment variables
+
+NoDPI now supports JSON configuration files and environment overrides. See [nodpi.example.json](/Users/aleksandrzemlanuhin/Dev/PROJECTS/TOOLS/NoDPI/nodpi.example.json) for a ready-to-edit template.
+
+Example:
+
+```bash
+python3 src/main.py --config ./nodpi.example.json
+```
+
+You can also override individual options through environment variables such as `NODPI_HOST`, `NODPI_PORT`, `NODPI_DNS_RESOLVERS`, `NODPI_CONNECT_TIMEOUT`, and `NODPI_IO_TIMEOUT`.
+
+### DNS and timeout troubleshooting
+
+If your ISP intermittently breaks UDP DNS for blocked domains, start NoDPI with a stronger DNS policy:
+
+```bash
+python3 src/main.py \
+  --dns-retries 3 \
+  --dns-retry-delay 0.2 \
+  --dns-timeout 2.0 \
+  --dns-resolver 8.8.8.8 \
+  --dns-resolver 1.1.1.1 \
+  --connect-timeout 5 \
+  --io-timeout 30
+```
+
+DNS failures are logged with structured details including host, resolver path, attempts, and exception type.
+
 ## Building the executable
 
 1) Make sure you have Python 3.8 or higher installed.

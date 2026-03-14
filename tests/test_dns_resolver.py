@@ -1,7 +1,14 @@
 import asyncio
 import socket
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+SRC_DIR = ROOT_DIR / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from src.main import (
     ConnectionHandler,
@@ -243,7 +250,7 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
                     "8.8.8.8",
                 ),
             ),
-            patch("src.main.asyncio.open_connection", new_callable=AsyncMock) as open_connection_mock,
+            patch("nodpi.proxy.asyncio.open_connection", new_callable=AsyncMock) as open_connection_mock,
             patch.object(self.handler, "_handle_initial_tls_data", new_callable=AsyncMock),
             patch.object(self.handler, "_setup_piping", new_callable=AsyncMock),
         ):

@@ -1,0 +1,16 @@
+{
+  "host": "127.0.0.1",
+  "port": 8881,
+  "blacklist_file": "blacklist.txt",
+  "fragment_method": "random",
+  "domain_matching": "strict",
+  "dns_retry_attempts": 3,
+  "dns_retry_delay": 0.2,
+  "dns_resolvers": ["8.8.8.8", "1.1.1.1"],
+  "dns_tcp_timeout": 2.0,
+  "dns_system_timeout": 2.0,
+  "connect_timeout": 5.0,
+  "io_timeout": 30.0,
+  "read_chunk_size": 1500,
+  "quiet": false
+}
