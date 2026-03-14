@@ -310,7 +310,7 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
                     "8.8.8.8",
                 ),
             ),
-            patch("nodpi.proxy.asyncio.open_connection", new_callable=AsyncMock) as open_connection_mock,
+            patch("nodpi.dns.asyncio.open_connection", new_callable=AsyncMock) as open_connection_mock,
             patch.object(self.handler, "_handle_initial_tls_data", new_callable=AsyncMock),
             patch.object(self.handler, "_setup_piping", new_callable=AsyncMock),
         ):
