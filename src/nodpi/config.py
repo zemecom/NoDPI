@@ -5,10 +5,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 
 from dataclasses import dataclass, fields
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 
 @dataclass
@@ -48,6 +49,7 @@ class ConfigLoader:
     """Loads configuration from command line arguments, env, and JSON."""
 
     ENV_PREFIX = "NODPI_"
+    DEFAULT_CONFIG_NAME = "nodpi.json"
 
     @staticmethod
     def create_parser() -> argparse.ArgumentParser:
@@ -153,7 +155,8 @@ class ConfigLoader:
     @classmethod
     def load(cls, args: argparse.Namespace) -> ProxyConfig:
         config = ProxyConfig()
-        for key, value in cls._load_json_config(getattr(args, "config", None)).items():
+        config_path = cls._resolve_config_path(getattr(args, "config", None))
+        for key, value in cls._load_json_config(config_path).items():
             cls._assign(config, key, value)
 
         for key, value in cls._load_env_config().items():
@@ -170,12 +173,44 @@ class ConfigLoader:
         return config
 
     @classmethod
-    def _load_json_config(cls, path: Optional[str]) -> Dict[str, Any]:
+    def _resolve_config_path(cls, explicit_path: Optional[str]) -> Optional[Path]:
+        if explicit_path:
+            return Path(explicit_path).expanduser().resolve()
+
+        env_path = os.environ.get(f"{cls.ENV_PREFIX}CONFIG")
+        if env_path:
+            return Path(env_path).expanduser().resolve()
+
+        for candidate in cls._default_config_candidates():
+            if candidate.is_file():
+                return candidate
+        return None
+
+    @classmethod
+    def _default_config_candidates(cls) -> Sequence[Path]:
+        candidates = [Path.cwd() / cls.DEFAULT_CONFIG_NAME]
+
+        if getattr(sys, "frozen", False):
+            candidates.append(Path(sys.executable).resolve().parent / cls.DEFAULT_CONFIG_NAME)
+        else:
+            candidates.append(Path(__file__).resolve().parents[2] / cls.DEFAULT_CONFIG_NAME)
+
+        unique_candidates = []
+        seen = set()
+        for candidate in candidates:
+            resolved_candidate = candidate.resolve()
+            if resolved_candidate in seen:
+                continue
+            seen.add(resolved_candidate)
+            unique_candidates.append(resolved_candidate)
+        return unique_candidates
+
+    @classmethod
+    def _load_json_config(cls, path: Optional[Path]) -> Dict[str, Any]:
         if not path:
             return {}
 
-        config_path = Path(path)
-        with config_path.open("r", encoding="utf-8") as file:
+        with path.open("r", encoding="utf-8") as file:
             raw = json.load(file)
 
         if not isinstance(raw, dict):

@@ -210,6 +210,8 @@ options:
 python3 src/main.py --config ./nodpi.example.json
 ```
 
+Если в корне проекта есть `./nodpi.json`, NoDPI теперь подхватывает его автоматически даже без `--config`.
+
 Отдельные параметры можно переопределять через `NODPI_HOST`, `NODPI_PORT`, `NODPI_DNS_RESOLVERS`, `NODPI_CONNECT_TIMEOUT` и `NODPI_IO_TIMEOUT`.
 
 ### Диагностика DNS и таймаутов

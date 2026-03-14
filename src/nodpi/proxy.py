@@ -370,9 +370,9 @@ class ConnectionHandler(IConnectionHandler):
             return resolved
         except DnsResolveError as fallback_error:
             fallback_error.attempts = attempts
-            if last_error and fallback_error.reason_code == "fallback_resolver_error":
-                fallback_error.reason_code = last_error.reason_code
-                fallback_error.last_exception = fallback_error.last_exception or last_error.last_exception
+            if last_error:
+                fallback_error.system_reason_code = last_error.reason_code
+                fallback_error.system_exception = last_error.last_exception
             raise fallback_error
 
     async def _open_resolved_connection(
@@ -631,13 +631,18 @@ class ConnectionHandler(IConnectionHandler):
         last_exception = error.last_exception
         last_exception_type = type(last_exception).__name__ if last_exception else "-"
         last_exception_text = str(last_exception) if last_exception else "-"
+        system_exception = error.system_exception
+        system_exception_type = type(system_exception).__name__ if system_exception else "-"
+        system_exception_text = str(system_exception) if system_exception else "-"
         dst_domain = conn_info.dst_domain if conn_info else error.host
         self.logger.log_error(
             "dns_error "
             f"host={error.host} port={error.port} reason={error.reason_code} "
+            f"system_reason={error.system_reason_code or '-'} "
             f"attempts={error.attempts} resolver_path={error.resolver_path} "
             f"resolver_used={error.resolver_used} exception_type={last_exception_type} "
-            f"exception={last_exception_text} dst_domain={dst_domain}"
+            f"exception={last_exception_text} system_exception_type={system_exception_type} "
+            f"system_exception={system_exception_text} dst_domain={dst_domain}"
         )
         try:
             writer.close()

@@ -45,6 +45,8 @@ class DnsResolveError(Exception):
         resolver_path: str,
         last_exception: Optional[BaseException] = None,
         resolver_used: Optional[str] = None,
+        system_reason_code: Optional[str] = None,
+        system_exception: Optional[BaseException] = None,
     ):
         self.host = host
         self.port = port
@@ -53,6 +55,8 @@ class DnsResolveError(Exception):
         self.resolver_path = resolver_path
         self.last_exception = last_exception
         self.resolver_used = resolver_used or "-"
+        self.system_reason_code = system_reason_code
+        self.system_exception = system_exception
         super().__init__(
             f"DNS resolve failed for {host}:{port} ({reason_code}, {resolver_path})"
         )

@@ -214,6 +214,8 @@ Example:
 python3 src/main.py --config ./nodpi.example.json
 ```
 
+If `./nodpi.json` exists, NoDPI now loads it automatically even without `--config`.
+
 You can also override individual options through environment variables such as `NODPI_HOST`, `NODPI_PORT`, `NODPI_DNS_RESOLVERS`, `NODPI_CONNECT_TIMEOUT`, and `NODPI_IO_TIMEOUT`.
 
 ### DNS and timeout troubleshooting

@@ -1,4 +1,5 @@
 .idea
+/nodpi.json
 /__pycache__
 /dist
 /build### Python template

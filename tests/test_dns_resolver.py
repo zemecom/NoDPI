@@ -230,6 +230,66 @@ class DnsResolverTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(resolved.ip, "142.250.74.110")
 
+    async def test_fallback_failure_preserves_final_reason_and_system_context(self):
+        with patch.object(
+            self.handler,
+            "_resolve_via_system",
+            side_effect=DnsResolveError(
+                "googleads.g.doubleclick.net",
+                443,
+                "system_resolver_error",
+                1,
+                "system",
+                socket.gaierror(socket.EAI_NONAME, "not known"),
+                resolver_used="system",
+            ),
+        ), patch.object(
+            self.handler,
+            "_resolve_via_tcp_dns",
+            side_effect=DnsResolveError(
+                "googleads.g.doubleclick.net",
+                443,
+                "fallback_resolver_error",
+                2,
+                "fallback-tcp",
+                RuntimeError("Fallback resolver 1.1.1.1 returned temporary_failure"),
+                resolver_used="8.8.8.8,1.1.1.1",
+            ),
+        ):
+            with self.assertRaises(DnsResolveError) as context:
+                await self.handler._resolve_target("googleads.g.doubleclick.net", 443)
+
+        error = context.exception
+        self.assertEqual(error.reason_code, "fallback_resolver_error")
+        self.assertEqual(error.system_reason_code, "system_resolver_error")
+        self.assertEqual(type(error.system_exception).__name__, "gaierror")
+
+    async def test_dns_error_log_contains_final_and_system_reason(self):
+        messages = []
+        self.handler.logger.log_error = messages.append
+        writer = FakeWriter()
+
+        await self.handler._handle_dns_resolve_error(
+            writer,
+            ("127.0.0.1", 54321),
+            DnsResolveError(
+                "static.doubleclick.net",
+                443,
+                "fallback_resolver_error",
+                3,
+                "fallback-tcp",
+                RuntimeError("Fallback resolver 1.1.1.1 returned temporary_failure"),
+                resolver_used="8.8.8.8,1.1.1.1",
+                system_reason_code="system_resolver_error",
+                system_exception=socket.gaierror(socket.EAI_NONAME, "not known"),
+            ),
+        )
+
+        self.assertEqual(len(messages), 1)
+        self.assertIn("reason=fallback_resolver_error", messages[0])
+        self.assertIn("system_reason=system_resolver_error", messages[0])
+        self.assertIn("system_exception_type=gaierror", messages[0])
+
     async def test_https_connect_uses_resolved_ip_for_open_connection(self):
         reader = AsyncMock()
         reader.read.return_value = b""

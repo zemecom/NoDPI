@@ -15,6 +15,34 @@ from nodpi.config import ConfigLoader
 
 
 class ConfigLoaderTests(unittest.TestCase):
+    def test_default_config_file_is_loaded_automatically(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "nodpi.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "host": "127.0.0.9",
+                        "port": 8899,
+                        "dns_resolvers": ["8.8.4.4"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            parser = ConfigLoader.create_parser()
+            args = parser.parse_args([])
+
+            with patch.object(
+                ConfigLoader,
+                "_default_config_candidates",
+                return_value=[config_path],
+            ):
+                config = ConfigLoader.load(args)
+
+        self.assertEqual(config.host, "127.0.0.9")
+        self.assertEqual(config.port, 8899)
+        self.assertEqual(config.dns_resolvers, ["8.8.4.4"])
+
     def test_json_env_and_cli_are_merged_in_order(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "nodpi.json"
